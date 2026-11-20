@@ -1,0 +1,14 @@
+{
+  "rules": [
+    {
+      "id": "public-fonts",
+      "allowed": {
+        "origins": ["*"],
+        "methods": ["GET", "HEAD"],
+        "headers": ["*"]
+      },
+      "exposeHeaders": ["ETag", "Content-Length", "Content-Type"],
+      "maxAgeSeconds": 86400
+    }
+  ]
+}

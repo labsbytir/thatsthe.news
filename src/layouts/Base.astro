@@ -5,8 +5,8 @@ import { createPublicPageContext } from "emdash/page";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 import "../styles/theme.css";
 import logoUrl from "../assets/thatsthe-news-logo.svg";
-
-const fontUrl = import.meta.env.PUBLIC_R2_FONT_URL as string | undefined;
+import vexoriumUrl from "../assets/fonts/vexorium-bold.woff2";
+import montserratUrl from "../assets/fonts/montserrat-variable.woff2";
 
 interface Props {
 	title: string;
@@ -65,11 +65,20 @@ const pageCtx = createPublicPageContext({
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{fullTitle}</title>
-		{
-			fontUrl && (
-				<style>{`@font-face{font-family:"Newsroom R2";src:url("${fontUrl}") format("woff2");font-display:swap;}:root{--font-display:"Newsroom R2","Arial Narrow","Helvetica Neue",Impact,sans-serif;}`}</style>
-			)
-		}
+		<link
+			rel="preload"
+			href={vexoriumUrl}
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href={montserratUrl}
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
 		<EmDashHead page={pageCtx} />
 	</head>
 	<body>
