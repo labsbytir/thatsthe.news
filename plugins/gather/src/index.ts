@@ -3,14 +3,15 @@
 import { definePlugin } from "emdash";
 import type { PluginContext, PluginDescriptor } from "emdash";
 import type { GatherSighting, GatherSource } from "./types.ts";
+import { isVerificationState } from "./types.ts";
 import { canonicalStoryUrl } from "./urls.ts";
 import { parseFeedItems } from "./rss.ts";
 import { mapDirectorySource, pickFeedUrl } from "./sync.ts";
-import { getArticleFeed, putSource, recordSighting } from "./store.ts";
+import { getArticleFeed, putSource, recordSighting, setVerification } from "./store.ts";
 import type { GatherStores } from "./store.ts";
 
 export const PLUGIN_ID = "gather";
-export const PLUGIN_VERSION = "0.1.0";
+export const PLUGIN_VERSION = "0.2.0";
 
 export interface GatherPluginOptions {
 	/** MediaCloud API key. Defaults to process.env.MEDIACLOUD_API_KEY. */
@@ -27,11 +28,40 @@ export function gatherPlugin(
 		version: PLUGIN_VERSION,
 		format: "native",
 		entrypoint: "@thatsthe-news/plugin-gather",
+		adminEntry: "@thatsthe-news/plugin-gather/admin",
 		options,
 	};
 }
 
 type Ctx = PluginContext;
+
+interface GatherConfig {
+	apiKey: string | null;
+	collections: string[];
+	pollLimit: number;
+}
+
+/** Descriptor options win, then stored settings, then environment. */
+async function resolveConfig(ctx: Ctx, options: GatherPluginOptions): Promise<GatherConfig> {
+	const settingsKey = await ctx.settings.get<string>("apiKey");
+	const settingsCollections = await ctx.settings.get<string>("collections");
+	const settingsLimit = await ctx.settings.get<number>("pollLimit");
+	return {
+		apiKey:
+			options.mediaCloudApiKey ??
+			settingsKey ??
+			process.env.MEDIACLOUD_API_KEY ??
+			null,
+		collections:
+			options.collections ??
+			settingsCollections
+				?.split(",")
+				.map((name) => name.trim())
+				.filter(Boolean) ??
+			[],
+		pollLimit: settingsLimit ?? 50,
+	};
+}
 
 function storesFrom(ctx: Ctx): GatherStores {
 	const storage = ctx.storage as unknown as GatherStores;
@@ -51,7 +81,8 @@ async function syncDirectory(
 	ctx: Ctx,
 	options: GatherPluginOptions,
 ): Promise<{ sources: number; unchanged: number }> {
-	const apiKey = options.mediaCloudApiKey ?? process.env.MEDIACLOUD_API_KEY;
+	const config = await resolveConfig(ctx, options);
+	const apiKey = config.apiKey;
 	const stores = storesFrom(ctx);
 	if (!apiKey) {
 		ctx.log.info("Gather: MEDIACLOUD_API_KEY not set, skipping directory sync");
@@ -60,8 +91,7 @@ async function syncDirectory(
 	const doFetch = fetchFn(ctx);
 	let created = 0;
 	let unchanged = 0;
-	const collections = options.collections ?? [];
-	for (const collectionName of collections) {
+	for (const collectionName of config.collections) {
 		const params = new URLSearchParams({
 			name: collectionName,
 			limit: "20",
@@ -126,12 +156,13 @@ async function syncDirectory(
 	return { sources: created, unchanged };
 }
 
-async function pollFeeds(ctx: Ctx, limit = 50): Promise<number> {
+async function pollFeeds(ctx: Ctx, options: GatherPluginOptions): Promise<number> {
+	const config = await resolveConfig(ctx, options);
 	const stores = storesFrom(ctx);
 	const doFetch = fetchFn(ctx);
 	const { items } = await stores.sources.query({
 		orderBy: { domain: "asc" },
-		limit,
+		limit: config.pollLimit,
 	});
 	let sightings = 0;
 	for (const { data: source } of items) {
@@ -204,8 +235,40 @@ export function createPlugin(options: GatherPluginOptions = {}) {
 				uniqueIndexes: ["canonicalUrl"],
 			},
 			links: {
-				indexes: ["articleId", "sightingId", ["articleId", "firstSeenAt"]],
+				indexes: [
+					"articleId",
+					"sightingId",
+					"verification",
+					["articleId", "firstSeenAt"],
+					["verification", "firstSeenAt"],
+				],
 				uniqueIndexes: [["articleId", "sightingId"]],
+			},
+		},
+		admin: {
+			entry: "@thatsthe-news/plugin-gather/admin",
+			pages: [{ path: "/gather", label: "Gather", icon: "rss" }],
+			widgets: [{ id: "gather-status", title: "Gather status" }],
+			settingsSchema: {
+				apiKey: {
+					type: "secret",
+					label: "MediaCloud API key",
+					description: "Used for directory sync. Falls back to MEDIACLOUD_API_KEY.",
+				},
+				collections: {
+					type: "string",
+					label: "Collections",
+					description: "Comma-separated MediaCloud collection names to sync.",
+					default: "United States - National",
+				},
+				pollLimit: {
+					type: "number",
+					label: "Poll limit",
+					description: "Max sources polled per cycle.",
+					min: 1,
+					max: 200,
+					default: 50,
+				},
 			},
 		},
 		hooks: {
@@ -234,13 +297,13 @@ export function createPlugin(options: GatherPluginOptions = {}) {
 				if (event.name === "gather-sync") {
 					await syncDirectory(ctx, options);
 				} else if (event.name === "gather-poll") {
-					await pollFeeds(ctx);
+					await pollFeeds(ctx, options);
 				}
 			},
 		},
 		routes: {
 			feed: {
-				permission: "content:read",
+				public: true,
 				handler: async (ctx) => {
 					const input = ctx.input as { articleId?: unknown };
 					if (typeof input?.articleId !== "string" || !input.articleId) {
@@ -256,6 +319,87 @@ export function createPlugin(options: GatherPluginOptions = {}) {
 					}));
 					if (entries.length > 0) entries[0].first = true;
 					return { ok: true as const, entries };
+				},
+			},
+			status: {
+				handler: async (ctx) => {
+					const stores = storesFrom(ctx);
+					const [sources, sightings, pending] = await Promise.all([
+						stores.sources.count(),
+						stores.sightings.count(),
+						stores.links.count({ verification: "unverified" }),
+					]);
+					return { sources, sightings, pending };
+				},
+			},
+			sources: {
+				handler: async (ctx) => {
+					const input = ctx.input as { limit?: unknown; cursor?: unknown };
+					const limit =
+						typeof input?.limit === "number"
+							? Math.min(Math.max(input.limit, 1), 100)
+							: 50;
+					const cursor =
+						typeof input?.cursor === "string" ? input.cursor : undefined;
+					const result = await storesFrom(ctx).sources.query({
+						orderBy: { domain: "asc" },
+						limit,
+						cursor,
+					});
+					return {
+						items: result.items.map(({ data }) => data),
+						cursor: result.cursor ?? null,
+						hasMore: result.hasMore ?? false,
+					};
+				},
+			},
+			queue: {
+				handler: async (ctx) => {
+					const stores = storesFrom(ctx);
+					const { items } = await stores.links.query({
+						where: { verification: "unverified" },
+						orderBy: { firstSeenAt: "asc" },
+						limit: 50,
+					});
+					const entries = [];
+					for (const { data: link } of items) {
+						const sighting = await stores.sightings.get(link.sightingId);
+						entries.push({
+							...link,
+							title: sighting?.title ?? link.sightingId,
+							url: sighting?.url ?? null,
+							sourceId: sighting?.sourceId ?? null,
+						});
+					}
+					return { entries };
+				},
+			},
+			verify: {
+				methods: ["POST"],
+				handler: async (ctx) => {
+					const input = ctx.input as {
+						articleId?: unknown;
+						sightingId?: unknown;
+						verification?: unknown;
+					};
+					if (
+						typeof input?.articleId !== "string" ||
+						typeof input?.sightingId !== "string" ||
+						!isVerificationState(input?.verification)
+					) {
+						return { ok: false as const, error: "INVALID_INPUT" };
+					}
+					try {
+						await setVerification(
+							storesFrom(ctx),
+							input.articleId,
+							input.sightingId,
+							input.verification,
+						);
+					} catch {
+						return { ok: false as const, error: "NOT_FOUND" };
+					}
+					return { ok: true as const };
 				},
 			},
 		},

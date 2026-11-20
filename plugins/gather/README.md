@@ -33,8 +33,22 @@ hosts plus `search.mediacloud.org`.
 
 ## Routes
 
-- `GET /_emdash/api/plugins/gather/feed?articleId=...` — oldest-first entries
-  with `first` set on the earliest. Requires `content:read`.
+Private by default (administrator access):
+
+- `GET .../gather/status` — source, sighting, and pending counts for the dashboard widget.
+- `GET .../gather/sources?limit&cursor` — registry rows oldest-domain-first.
+- `GET .../gather/queue` — unverified links oldest-first with sighting titles.
+- `POST .../gather/verify` — `{ articleId, sightingId, verification }`; rejects unknown states and missing links.
+
+Public (read-only published data for story pages):
+
+- `GET .../gather/feed?articleId=...` — oldest-first entries with `first` set on the earliest.
+
+## Admin
+
+- **Gather** page (`/_emdash/admin/plugins/gather/gather`): verification queue with Verify/Dispute actions plus the source registry table.
+- **Gather status** dashboard widget: sources · sightings · pending.
+- Settings (Plugins → Gather): MediaCloud API key (secret, falls back to `MEDIACLOUD_API_KEY`), collections list, poll limit.
 
 ## Checks
 

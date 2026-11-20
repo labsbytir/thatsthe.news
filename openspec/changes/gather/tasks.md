@@ -11,10 +11,10 @@
 
 ## 2. Plugin API and admin UI
 
-- [ ] 2.1 Expose REST routes (per-article feed oldest-first, sources list, verification update) and verify `curl` returns oldest-first JSON with first-published flag
-- [ ] 2.2 Build React admin overview page (source registry table + sync status) and verify it renders seeded sources without errors
-- [ ] 2.3 Build verification queue UI (pending links with verify/dispute actions) and verify an action updates the public feed on next request
-- [ ] 2.4 Add empty/error states for API and admin (no key, poll failure, no sightings) and verify each state renders its notice
+- [x] 2.1 Expose REST routes (per-article feed oldest-first, sources list, verification update) and verify `curl` returns oldest-first JSON with first-published flag
+- [x] 2.2 Build React admin overview page (source registry table + sync status) and verify it renders seeded sources without errors
+- [x] 2.3 Build verification queue UI (pending links with verify/dispute actions) and verify an action updates the public feed on next request
+- [x] 2.4 Add empty/error states for API and admin (no key, poll failure, no sightings) and verify each state renders its notice
 
 ## 3. Public feed components (brutalist)
 
