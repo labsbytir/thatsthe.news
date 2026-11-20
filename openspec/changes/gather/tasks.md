@@ -38,8 +38,8 @@
 
 ## 5. Brand assets
 
-- [ ] 5.1 Add `src/assets/thatsthe-news-logo.svg` and wire into masthead linking `/` with text fallback, and verify homepage shows the SVG wordmark
-- [ ] 5.2 Add deferred R2 font hook (`@font-face` gated on configured URL, `font-display: swap`) and verify no font request fires when unconfigured
+- [x] 5.1 Add `src/assets/thatsthe-news-logo.svg` and wire into masthead linking `/` with text fallback, and verify homepage shows the SVG wordmark
+- [x] 5.2 Add deferred R2 font hook (`@font-face` gated on configured URL, `font-display: swap`) and verify no font request fires when unconfigured
 
 ## 6. Integration verify and hand back
 
