@@ -374,6 +374,23 @@ export function createPlugin(options: GatherPluginOptions = {}) {
 					return { entries };
 				},
 			},
+			directory: {
+				public: true,
+				handler: async (ctx) => {
+					const result = await storesFrom(ctx).sources.query({
+						orderBy: { domain: "asc" },
+						limit: 100,
+					});
+					return {
+						items: result.items.map(({ data }) => ({
+							domain: data.domain,
+							name: data.name,
+							homepage: data.homepage,
+							collection: data.collection,
+						})),
+					};
+				},
+			},
 			verify: {
 				methods: ["POST"],
 				handler: async (ctx) => {

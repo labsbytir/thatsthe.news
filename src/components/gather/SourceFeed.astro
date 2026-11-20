@@ -1,0 +1,109 @@
+---
+/**
+ * Shared source feed for one article. Slug-keyed until EmDash-side
+ * article linking lands; empty registry renders the empty state.
+ */
+import VerificationTimeline from "./VerificationTimeline.astro";
+import { getGatherFeed, type GatherFeedEntry } from "../../utils/gather-feed";
+
+interface Props {
+	articleId: string;
+	entries?: GatherFeedEntry[];
+	reachable?: boolean;
+}
+
+const { articleId } = Astro.props;
+const feed =
+	Astro.props.entries !== undefined || Astro.props.reachable !== undefined
+		? {
+				entries: Astro.props.entries ?? [],
+				reachable: Astro.props.reachable ?? true,
+			}
+		: await getGatherFeed(Astro.url.origin, articleId);
+const { entries, reachable } = feed;
+
+const badgeFor = (verification: GatherFeedEntry["verification"]) =>
+	({
+		verified: "badge--verified",
+		corroborated: "badge--corroborated",
+		disputed: "badge--disputed",
+		unverified: "badge--unverified",
+	})[verification];
+
+const shortDate = (value: string) =>
+	new Date(value).toLocaleDateString("en-GB", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	});
+---
+
+<section class="feed" aria-label="Source feed" data-feed-article={articleId} data-feed-count={entries.length}>
+	<div class="section-head">
+		<span class="section-head__mark">SRC</span> Source feed
+		<span class="feed__pulse mono" data-pulse>● live</span>
+	</div>
+
+	{
+		!reachable ? (
+			<p class="empty">Source feed unavailable right now. The story above is unaffected.</p>
+		) : entries.length === 0 ? (
+			<p class="empty">
+				No monitored sources linked yet. Add a MediaCloud API key in Gather settings to start
+				syncing the registry.
+			</p>
+		) : (
+			<ol class="feed__list">
+				{entries.map((entry) => (
+					<li class="feed__item">
+						<div class="mono">
+							{entry.first && <span class="badge badge--first">First published</span>}
+							<span class={`badge ${badgeFor(entry.verification)}`}>{entry.verification}</span>
+						</div>
+						<p class="feed__title">
+							{entry.url ? (
+								<a href={entry.url} rel="noopener">{entry.title}</a>
+							) : (
+								entry.title
+							)}
+						</p>
+						<div class="meta">
+							<span><strong>{entry.sourceId ?? "unknown source"}</strong></span>
+							<span>first seen {shortDate(entry.firstSeenAt)}</span>
+						</div>
+						<VerificationTimeline verification={entry.verification} />
+					</li>
+				))}
+			</ol>
+		)
+	}
+</section>
+
+<script>
+	const section = document.querySelector<HTMLElement>("[data-feed-article]");
+	if (section) {
+		const articleId = section.dataset.feedArticle ?? "";
+		const initial = Number(section.dataset.feedCount ?? "0");
+		const pulse = section.querySelector("[data-pulse]");
+		const stamp = () => {
+			if (pulse) {
+				pulse.textContent = `● live · checked ${new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}`;
+			}
+		};
+		stamp();
+		setInterval(async () => {
+			try {
+				const res = await fetch(
+					`/_emdash/api/plugins/gather/feed?articleId=${encodeURIComponent(articleId)}`,
+				);
+				if (!res.ok) return;
+				const payload = await res.json();
+				const count = payload?.data?.entries?.length ?? initial;
+				if (count !== initial) window.location.reload();
+				stamp();
+			} catch {
+				/* keep stale feed rather than break the page */
+			}
+		}, 60000);
+	}
+</script>

@@ -598,8 +598,7 @@ img {
 }
 
 /* Mobile */
-@media (max-width: 800px) {
-	.masthead {
+@media (max-width: 800px) {	.masthead {
 		grid-template-columns: 1fr;
 		gap: 0.5rem;
 		text-align: center;
@@ -655,4 +654,145 @@ img {
 	.site-nav a {
 		padding: 0.6rem 0.8rem;
 	}
+}
+
+/* Gather source feed */
+.feed {
+	margin-top: 2.5rem;
+}
+
+.feed__pulse {
+	margin-left: auto;
+	color: var(--accent);
+}
+
+.feed__list {
+	list-style: none;
+	margin: 1.5rem 0 0;
+	padding: 0;
+	border: var(--rule);
+	border-top: 0;
+}
+
+.feed__item {
+	padding: clamp(1rem, 2vw, 1.5rem);
+	border-top: var(--rule);
+	min-width: 0;
+}
+
+.feed__item:first-child {
+	border-top: 0;
+}
+
+.feed__title {
+	margin: 0.7rem 0 0;
+	font-family: var(--font-display);
+	font-size: clamp(1.2rem, 2vw, 1.8rem);
+	font-weight: 800;
+	line-height: 1.05;
+	text-transform: uppercase;
+	letter-spacing: -0.02em;
+	overflow-wrap: anywhere;
+}
+
+.badge {
+	display: inline-block;
+	font-family: var(--font-mono);
+	font-size: 0.64rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+	padding: 0.25rem 0.5rem;
+	border: 2px solid var(--ink);
+	margin-right: 0.5rem;
+}
+
+.badge--first {
+	background: var(--accent);
+	border-color: var(--accent);
+	color: #fff;
+}
+
+.badge--verified {
+	background: var(--ink);
+	color: var(--acid);
+}
+
+.badge--corroborated {
+	background: var(--paper);
+}
+
+.badge--disputed {
+	background: var(--accent);
+	border-color: var(--ink);
+	color: #fff;
+}
+
+.badge--unverified {
+	background: transparent;
+	color: var(--muted);
+	border-color: var(--muted);
+}
+
+.timeline {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0;
+	list-style: none;
+	margin: 1rem 0 0;
+	padding: 0;
+	font-family: var(--font-mono);
+	font-size: 0.64rem;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.timeline__step {
+	padding: 0.3rem 0.6rem;
+	border: 2px solid var(--muted);
+	border-left-width: 0;
+	color: var(--muted);
+}
+
+.timeline__step:first-child {
+	border-left-width: 2px;
+}
+
+.timeline__step--done {
+	border-color: var(--ink);
+	color: var(--ink);
+	background: var(--paper);
+}
+
+.timeline__step--current {
+	background: var(--ink);
+	border-color: var(--ink);
+	color: var(--acid);
+	font-weight: 700;
+}
+
+.timeline__step--disputed {
+	background: var(--accent);
+	border-color: var(--ink);
+	color: #fff;
+	font-weight: 700;
+}
+
+.citations {
+	margin-top: 2rem;
+}
+
+.citations__list {
+	margin: 1rem 0 0;
+	padding-left: 1.5rem;
+}
+
+.citations__list li {
+	margin-bottom: 0.6rem;
+	overflow-wrap: anywhere;
+}
+
+.citations__list a {
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }

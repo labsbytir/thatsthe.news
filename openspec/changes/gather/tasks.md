@@ -18,13 +18,13 @@
 
 ## 3. Public feed components (brutalist)
 
-- [ ] 3.1 Build `SourceFeed` + `SourceFeedItem` (oldest-first list slot for article pages) and verify two seeded sightings render in first-seen order
-- [ ] 3.2 Build `FirstPublishedBadge` + `VerificationBadge` and verify the earliest entry shows first-published and verified entries show verified
-- [ ] 3.3 Build `VerificationTimeline` (unverified → corroborated → verified progression) and verify a disputed link renders the disputed branch
-- [ ] 3.4 Build `SourceList` (all monitored sources with collection labels) and verify it links each source homepage
-- [ ] 3.5 Build `CitationList` (source name, title, URL, first-seen per entry) and verify output contains all four fields per entry
-- [ ] 3.6 Build `LivePulse` polling indicator + `FeedEmpty`/`FeedError` states and verify each renders without layout shift
-- [ ] 3.7 Slot feed + citations into `src/pages/articles/[slug].astro` and verify HTTP 200 with feed markers present
+- [x] 3.1 Build `SourceFeed` + `SourceFeedItem` (oldest-first list slot for article pages) and verify two seeded sightings render in first-seen order
+- [x] 3.2 Build `FirstPublishedBadge` + `VerificationBadge` and verify the earliest entry shows first-published and verified entries show verified
+- [x] 3.3 Build `VerificationTimeline` (unverified → corroborated → verified progression) and verify a disputed link renders the disputed branch
+- [x] 3.4 Build `SourceList` (all monitored sources with collection labels) and verify it links each source homepage
+- [x] 3.5 Build `CitationList` (source name, title, URL, first-seen per entry) and verify output contains all four fields per entry
+- [x] 3.6 Build `LivePulse` polling indicator + `FeedEmpty`/`FeedError` states and verify each renders without layout shift
+- [x] 3.7 Slot feed + citations into `src/pages/articles/[slug].astro` and verify HTTP 200 with feed markers present
 
 ## 4. Source graph map (PMTiles + MapLibre)
 

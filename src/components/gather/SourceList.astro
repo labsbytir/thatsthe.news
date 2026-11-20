@@ -1,0 +1,44 @@
+---
+/** All monitored sources with collection labels. Data fed by the page. */
+interface DirectoryEntry {
+	domain: string;
+	name: string;
+	homepage: string;
+	collection: string | null;
+}
+
+interface Props {
+	items: DirectoryEntry[];
+}
+
+const { items } = Astro.props;
+---
+
+<section aria-label="Monitored sources">
+	<div class="archive-note mono">Registry / {items.length} sources</div>
+	<h1 class="archive-title">Sources</h1>
+	{
+		items.length === 0 ? (
+			<p class="empty">
+				No sources yet. Add a MediaCloud API key in Gather settings to sync the directory.
+			</p>
+		) : (
+			<div class="story-grid">
+				{items.map((item, index) => (
+					<article class="card">
+						<div class="mono">
+							<span class="card__index">{String(index + 1).padStart(2, "0")}</span>
+							<span class="card__kicker">{item.collection ?? "Unfiled"}</span>
+						</div>
+						<h2 class="card__title">
+							<a href={item.homepage} rel="noopener">{item.name}</a>
+						</h2>
+						<div class="meta">
+							<span>{item.domain}</span>
+						</div>
+					</article>
+				))}
+			</div>
+		)
+	}
+</section>

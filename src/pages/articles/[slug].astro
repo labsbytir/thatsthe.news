@@ -2,6 +2,9 @@
 import { decodeSlug, getEmDashCollection, getEmDashEntry, getSeoMeta, getSiteSettings } from "emdash";
 import { Image, PortableText } from "emdash/ui";
 import Base from "../../layouts/Base.astro";
+import SourceFeed from "../../components/gather/SourceFeed.astro";
+import CitationList from "../../components/gather/CitationList.astro";
+import { getGatherFeed } from "../../utils/gather-feed";
 import { resolveStarterSiteIdentity } from "../../utils/site-identity";
 
 const slug = decodeSlug(Astro.params.slug);
@@ -32,6 +35,7 @@ const { entries: related, cacheHint: relatedCacheHint } = categorySlug
 if (Astro.cache?.enabled && relatedCacheHint) Astro.cache.set(relatedCacheHint);
 
 const others = related.filter((item) => item.id !== article.id).slice(0, 4);
+const feed = await getGatherFeed(Astro.url.origin, article.id);
 const published = article.data.publishedAt
 	? article.data.publishedAt.toLocaleDateString("en-GB", {
 			day: "2-digit",
@@ -78,6 +82,8 @@ const published = article.data.publishedAt
 				)
 			}
 			<div class="prose"><PortableText value={article.data.content} /></div>
+			<SourceFeed articleId={article.id} entries={feed.entries} reachable={feed.reachable} />
+			<CitationList entries={feed.entries} />
 			{
 				tags.length > 0 && (
 					<div class="tag-row">

@@ -1,0 +1,42 @@
+---
+/** Machine-readable citations for one article's feed entries. */
+interface CitationEntry {
+	title: string;
+	url: string | null;
+	sourceId: string | null;
+	firstSeenAt: string;
+}
+
+interface Props {
+	entries: CitationEntry[];
+}
+
+const { entries } = Astro.props;
+const shortDate = (value: string) =>
+	new Date(value).toLocaleDateString("en-GB", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	});
+---
+
+{
+	entries.length > 0 && (
+		<section class="citations" aria-label="Citations">
+			<div class="section-head">
+				<span class="section-head__mark">CIT</span> Citations
+			</div>
+			<ol class="citations__list mono">
+				{entries.map((entry) => (
+					<li>
+						{entry.sourceId ?? "Unknown source"} — {entry.title}.{" "}
+						{entry.url && (
+							<a href={entry.url} rel="noopener">{entry.url}</a>
+						)}{" "}
+						First seen {shortDate(entry.firstSeenAt)}.
+					</li>
+				))}
+			</ol>
+		</section>
+	)
+}

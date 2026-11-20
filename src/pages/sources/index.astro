@@ -1,0 +1,11 @@
+---
+import Base from "../../layouts/Base.astro";
+import SourceList from "../../components/gather/SourceList.astro";
+import { getGatherDirectory } from "../../utils/gather-feed";
+
+const items = await getGatherDirectory(Astro.url.origin);
+---
+
+<Base title="Sources" description="Monitored news sources">
+	<SourceList items={items} />
+</Base>

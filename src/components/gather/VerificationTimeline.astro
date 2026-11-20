@@ -1,0 +1,19 @@
+---
+/** Verification progression for a single feed entry. */
+interface Props {
+	verification: "unverified" | "corroborated" | "verified" | "disputed";
+}
+
+const { verification } = Astro.props;
+const steps = ["unverified", "corroborated", "verified"] as const;
+const reached = verification === "disputed" ? 0 : steps.indexOf(verification);
+---
+
+<ol class="timeline" aria-label={`Verification: ${verification}`}>
+	{steps.map((step, index) => (
+		<li class={`timeline__step${index <= reached ? " timeline__step--done" : ""}${step === verification ? " timeline__step--current" : ""}`}>
+			{step}
+		</li>
+	))}
+	{verification === "disputed" && <li class="timeline__step timeline__step--disputed">disputed</li>}
+</ol>
