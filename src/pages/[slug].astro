@@ -1,24 +1,18 @@
 ---
-import { getEmDashEntry, getSeoMeta, decodeSlug, getSiteSettings } from "emdash";
+import { decodeSlug, getEmDashEntry, getSeoMeta, getSiteSettings } from "emdash";
 import { PortableText } from "emdash/ui";
 import Base from "../layouts/Base.astro";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 
 const slug = decodeSlug(Astro.params.slug);
+if (!slug) return Astro.rewrite("/404");
 
-if (!slug) {
-	return Astro.rewrite("/404");
-}
-
-const { entry: page, cacheHint } = await getEmDashEntry("pages", slug);
-
-if (!page) {
-	return Astro.rewrite("/404");
-}
-
+const { entry: page, error, cacheHint } = await getEmDashEntry("pages", slug);
+if (error) return new Response("Unable to load page", { status: 500 });
+if (!page) return Astro.rewrite("/404");
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
-const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
 
+const { siteTitle } = resolveStarterSiteIdentity(await getSiteSettings());
 const seo = getSeoMeta(page, {
 	siteTitle,
 	siteUrl: Astro.url.origin,
@@ -33,9 +27,11 @@ const seo = getSeoMeta(page, {
 	canonical={seo.canonical}
 	content={{ collection: "pages", id: page.data.id, slug }}
 >
-	<article>
-		<h1 {...page.edit.title}>{page.data.title}</h1>
-
-		<PortableText value={page.data.content} />
-	</article>
+	<header class="article-head">
+		<div class="mono"><span class="section-head__mark">Page</span></div>
+		<h1 class="article-head__title" {...page.edit.title}>{page.data.title}</h1>
+	</header>
+	<div class="article-shell">
+		<div class="article-main prose"><PortableText value={page.data.content} /></div>
+	</div>
 </Base>

@@ -1,50 +1,143 @@
 ---
-import { getEmDashCollection, getSiteSettings } from "emdash";
+import { getEmDashCollection } from "emdash";
 import { Image } from "emdash/ui";
 import Base from "../layouts/Base.astro";
-import { resolveStarterSiteIdentity } from "../utils/site-identity";
 
-const { entries: posts, cacheHint } = await getEmDashCollection("posts", {
+const { entries: articles, cacheHint } = await getEmDashCollection("articles", {
 	orderBy: { published_at: "desc" },
-	limit: 10,
+	limit: 24,
 });
-const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
-	await getSiteSettings(),
-);
 if (Astro.cache?.enabled) Astro.cache.set(cacheHint);
+
+const breaking = articles.filter((article) => article.data.breaking);
+const lead = breaking[0] ?? articles[0];
+const side = articles
+	.filter((article) => article.id !== lead?.id)
+	.slice(0, 2);
+const rest = articles.filter(
+	(article) => article.id !== lead?.id && !side.some((item) => item.id === article.id),
+);
+
+const shortDate = (value?: Date | null) =>
+	value
+		? value.toLocaleDateString("en-GB", {
+				day: "2-digit",
+				month: "short",
+				year: "numeric",
+			})
+		: "undated";
+
+const sectionOf = (article: (typeof articles)[number]) =>
+	article.data.terms?.category?.[0];
 ---
 
-<Base title={siteTitle} description={siteTagline}>
-	<h1>Recent Posts</h1>
+<Base title="Latest" description="Around the clock. Where you are.">
+	{
+		breaking.length > 0 && (
+			<section class="breaking" aria-label="Breaking news">
+				<div class="breaking__label">Breaking</div>
+				<div class="breaking__items">
+					{breaking.map((article) => (
+						<a href={`/articles/${article.id}`} {...article.edit.headline}>
+							{article.data.headline}
+						</a>
+					))}
+				</div>
+			</section>
+		)
+	}
 
 	{
-		posts.length === 0 ? (
-			<p>
-				No posts yet. <a href="/_emdash/admin/content/posts/new">Create one</a>.
-			</p>
+		articles.length === 0 ? (
+			<p class="empty">No published stories yet. Add one in the EmDash admin.</p>
 		) : (
-			<ul>
-				{posts.map((post) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
-							{post.data.featured_image && (
-								<div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>
+			<>
+				<div class="section-head">
+					<span class="section-head__mark">01</span> Front page
+				</div>
+
+				<div class="lead-grid">
+					{lead && (
+						<article class="lead">
+							<span class="lead__kicker" {...lead.edit.headline}>
+								{sectionOf(lead)?.label ?? "News"} / Lead
+							</span>
+							<h2 class="lead__title" {...lead.edit.headline}>
+								<a href={`/articles/${lead.id}`}>{lead.data.headline}</a>
+							</h2>
+							{lead.data.dek && <p class="lead__dek" {...lead.edit.dek}>{lead.data.dek}</p>}
+							{lead.data.hero_image && (
+								<figure class="lead__figure" {...lead.edit.hero_image}>
+									<Image image={lead.data.hero_image} />
+									{lead.data.hero_image.alt && (
+										<figcaption>{lead.data.hero_image.alt}</figcaption>
+									)}
+								</figure>
 							)}
-							<h2 {...post.edit.title}>{post.data.title}</h2>
-						</a>
-						{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
-						{post.data.publishedAt && (
-							<time datetime={post.data.publishedAt.toISOString()}>
-								{post.data.publishedAt.toLocaleDateString("en-US", {
-									year: "numeric",
-									month: "long",
-									day: "numeric",
-								})}
-							</time>
-						)}
-					</li>
-				))}
-			</ul>
+							<div class="meta">
+								<span><strong>{lead.data.region}</strong> edition</span>
+								<span>{shortDate(lead.data.publishedAt)}</span>
+								{lead.data.byline && <span>By {lead.data.byline.displayName}</span>}
+							</div>
+						</article>
+					)}
+
+					<div class="lead__side">
+						{side.map((article) => (
+							<article class="mini">
+								<span class="mono" {...article.edit.headline}>
+									{sectionOf(article)?.label ?? "News"}
+								</span>
+								<h3 class="mini__title" {...article.edit.headline}>
+									<a href={`/articles/${article.id}`}>{article.data.headline}</a>
+								</h3>
+								{article.data.dek && (
+									<p class="mini__dek" {...article.edit.dek}>{article.data.dek}</p>
+								)}
+								<div class="meta">
+									<span>{article.data.region}</span>
+									<span>{shortDate(article.data.publishedAt)}</span>
+								</div>
+							</article>
+						))}
+					</div>
+				</div>
+
+				{
+					rest.length > 0 && (
+						<>
+							<div class="section-head">
+								<span class="section-head__mark">02</span> The feed
+							</div>
+							<div class="story-grid">
+								{rest.map((article, index) => (
+									<article class="card">
+										<div class="mono">
+											<span class="card__index">
+												{String(index + 1).padStart(2, "0")}
+											</span>
+											<span class="card__kicker" {...article.edit.headline}>
+												{sectionOf(article)?.label ?? "News"}
+											</span>
+										</div>
+										<h3 class="card__title" {...article.edit.headline}>
+											<a href={`/articles/${article.id}`}>{article.data.headline}</a>
+										</h3>
+										{article.data.dek && (
+											<p class="card__dek" {...article.edit.dek}>{article.data.dek}</p>
+										)}
+										<div class="meta">
+											<span><strong>{article.data.region}</strong></span>
+											<span>{shortDate(article.data.publishedAt)}</span>
+											{article.data.breaking && <span>Breaking</span>}
+										</div>
+									</article>
+								))}
+							</div>
+						</>
+					)
+				}
+			</>
 		)
 	}
 </Base>

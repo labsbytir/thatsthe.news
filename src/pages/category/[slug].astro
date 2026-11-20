@@ -1,10 +1,9 @@
 ---
 import {
-	getTaxonomyTermsWithCacheHint,
-	getEmDashCollection,
 	decodeSlug,
+	getEmDashCollection,
+	getTaxonomyTermsWithCacheHint,
 } from "emdash";
-import { Image } from "emdash/ui";
 import Base from "../../layouts/Base.astro";
 
 const slug = decodeSlug(Astro.params.slug);
@@ -12,17 +11,14 @@ const termsResult = await getTaxonomyTermsWithCacheHint("category", {
 	includeCounts: false,
 });
 const term = slug ? termsResult.data.find((item) => item.slug === slug) : null;
-
-if (!term) {
-	return Astro.rewrite("/404");
-}
+if (!term) return Astro.rewrite("/404");
 
 const cursor = Astro.url.searchParams.get("cursor") || undefined;
 const {
-	entries: posts,
+	entries: articles,
 	cacheHint,
 	nextCursor,
-} = await getEmDashCollection("posts", {
+} = await getEmDashCollection("articles", {
 	where: { category: term.slug },
 	orderBy: { published_at: "desc" },
 	limit: 20,
@@ -32,38 +28,54 @@ if (Astro.cache?.enabled) {
 	Astro.cache.set(termsResult.cacheHint);
 	Astro.cache.set(cacheHint);
 }
+
+const shortDate = (value?: Date | null) =>
+	value
+		? value.toLocaleDateString("en-GB", {
+				day: "2-digit",
+				month: "short",
+				year: "numeric",
+			})
+		: "undated";
 ---
 
-<Base title={`${term.label} posts`} description={`Posts in ${term.label}`}>
-	<h1>{term.label}</h1>
+<Base title={`${term.label} — Section`} description={`Stories in ${term.label}`}>
+	<div class="archive-note mono">Section archive / {articles.length} stories</div>
+	<h1 class="archive-title">{term.label}</h1>
 
 	{
-		posts.length === 0 ? (
-			<p>No posts in this category yet.</p>
+		articles.length === 0 ? (
+			<p class="empty">Nothing published in this section yet.</p>
 		) : (
-			<ul>
-				{posts.map((post) => (
-					<li>
-						<a href={`/posts/${post.id}`}>
-							{post.data.featured_image && (
-								<div {...post.edit.featured_image}><Image image={post.data.featured_image} /></div>
-							)}
-							<h2 {...post.edit.title}>{post.data.title}</h2>
-						</a>
-						{post.data.excerpt && <p {...post.edit.excerpt}>{post.data.excerpt}</p>}
-					</li>
+			<div class="story-grid">
+				{articles.map((article, index) => (
+					<article class="card">
+						<div class="mono">
+							<span class="card__index">{String(index + 1).padStart(2, "0")}</span>
+							<span class="card__kicker" {...article.edit.headline}>
+								{article.data.region}
+							</span>
+						</div>
+						<h2 class="card__title" {...article.edit.headline}>
+							<a href={`/articles/${article.id}`}>{article.data.headline}</a>
+						</h2>
+						{article.data.dek && <p class="card__dek" {...article.edit.dek}>{article.data.dek}</p>}
+						<div class="meta">
+							<span>{shortDate(article.data.publishedAt)}</span>
+							{article.data.breaking && <span>Breaking</span>}
+						</div>
+					</article>
 				))}
-			</ul>
+			</div>
 		)
 	}
-	<nav aria-label="Pagination">
+
+	<nav class="pagination" aria-label="Pagination">
 		{cursor && <a href={`/category/${term.slug}`}>First page</a>}
 		{
 			nextCursor && (
-				<a
-					href={`/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}
-				>
-					Next page
+				<a href={`/category/${term.slug}?cursor=${encodeURIComponent(nextCursor)}`}>
+					Older stories →
 				</a>
 			)
 		}

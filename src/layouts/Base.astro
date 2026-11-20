@@ -2,8 +2,8 @@
 import { getMenuWithCacheHint, getSiteSettingsWithCacheHint } from "emdash";
 import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
-import LiveSearch from "emdash/ui/search";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
+import "../styles/theme.css";
 
 interface Props {
 	title: string;
@@ -11,7 +11,6 @@ interface Props {
 	description?: string | null;
 	image?: string | null;
 	canonical?: string | null;
-	/** Pass content reference for plugin page contributions on content pages */
 	content?: { collection: string; id: string; slug?: string | null };
 }
 
@@ -26,7 +25,7 @@ if (Astro.cache?.enabled) {
 	Astro.cache.set(menuResult.cacheHint);
 }
 
-const { siteTitle, siteTagline, siteLogo } = resolveStarterSiteIdentity(
+const { siteTitle, siteTagline } = resolveStarterSiteIdentity(
 	settingsResult.data,
 );
 const titleIncludesSiteName =
@@ -36,6 +35,12 @@ const titleIncludesSiteName =
 const fullTitle = titleIncludesSiteName ? title : `${title} — ${siteTitle}`;
 const pageDescription = description ?? siteTagline;
 const menu = menuResult.data;
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const today = new Date().toLocaleDateString("en-GB", {
+	day: "2-digit",
+	month: "short",
+	year: "numeric",
+});
 
 const pageCtx = createPublicPageContext({
 	Astro,
@@ -62,39 +67,44 @@ const pageCtx = createPublicPageContext({
 	<body>
 		<EmDashBodyStart page={pageCtx} />
 
-		<header>
-			<nav>
-				<a href="/">
-					{
-						siteLogo ? (
-							<img
-								src={siteLogo.url}
-								alt={siteLogo.alt || siteTitle}
-								style="height:48px;width:auto;margin:-8px 0;display:block;"
-							/>
-						) : (
-							siteTitle
-						)
-					}
-				</a>
+		<header class="site-header">
+			<div class="wrap masthead">
+				<div class="masthead__side mono">
+					Independent newsroom<br />Est. 2026 / No. 001
+				</div>
+				<div>
+					<h1 class="masthead__title">{siteTitle}</h1>
+					<p class="masthead__tagline">{siteTagline}</p>
+				</div>
+				<div class="masthead__side masthead__side--right mono">
+					Updated around the clock<br />{today} / live edition
+				</div>
+			</div>
+			<nav class="site-nav wrap" aria-label="Primary">
 				{
 					menu?.items.map((item) => (
 						<a
 							href={item.url}
 							target={item.target}
 							rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
+							aria-current={path === item.url ? "page" : undefined}
 						>
 							{item.label}
 						</a>
 					))
 				}
-				<LiveSearch placeholder="Search..." collections={["posts", "pages"]} />
 			</nav>
 		</header>
 
-		<main>
-			<slot />
-		</main>
+		<main class="wrap"><slot /></main>
+
+		<footer class="site-footer">
+			<div class="wrap footer-grid">
+				<span>{siteTitle} / all copy editable in EmDash</span>
+				<span>Local preview — not deployed</span>
+				<a href="/_emdash/admin/">Editor login</a>
+			</div>
+		</footer>
 
 		<EmDashBodyEnd page={pageCtx} />
 	</body>
