@@ -17,13 +17,13 @@ The system SHALL render the supplied SVG wordmark in the site masthead, linking 
 - **WHEN** the logo asset is absent
 - **THEN** the masthead renders the site title as text instead of failing
 
-### Requirement: Deferred R2 font
-The system SHALL load the custom font from R2 only when the user has uploaded it and configured its URL, using the system stack otherwise.
+### Requirement: Locally embedded house fonts
+The system SHALL serve Vexorium Bold (display) and Montserrat variable (body) from local `src/assets/fonts/` via `@font-face` with `font-display: swap` and preloads, making zero external font requests.
 
-#### Scenario: No font URL uses system stack
-- **WHEN** no font URL is configured
-- **THEN** the site renders with the existing system font stack and no failed requests
+#### Scenario: No external font requests
+- **WHEN** a visitor loads any page
+- **THEN** all font bytes come from the site's own assets and no third-party font request fires
 
-#### Scenario: Configured font URL is used
-- **WHEN** a font URL is configured
-- **THEN** the site loads it via font-display swap without blocking text rendering
+#### Scenario: Missing font file falls back
+- **WHEN** a font file is absent from the build
+- **THEN** the site renders with the system font stack instead of failing

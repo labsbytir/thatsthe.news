@@ -2,19 +2,19 @@
 
 ## Context
 
-See proposal.md for motivation. Current state: Astro + EmDash Node starter on `sandbox`, SQLite + local storage, server output, brutalist theme in `src/styles/theme.css`. No plugins registered. MediaCloud access is via v4 API (key user-supplied); PMTiles docs confirm single-file archives over HTTP range requests rendered with MapLibre GL. Logo supplied as SVG file; font upload to R2 deferred by user.
+See proposal.md for motivation. Current state: Astro + EmDash Node starter on `sandbox`, SQLite + local storage, server output, brutalist theme in `src/styles/theme.css`. No plugins registered. MediaCloud access is via v4 API (key user-supplied); PMTiles docs confirm single-file archives over HTTP range requests rendered with MapLibre GL. Logo supplied as SVG file; Vexorium Bold + Montserrat embedded locally.
 
 ## Goals / Non-Goals
 
 **Goals:**
 - Native in-repo Gather plugin: source registry, cron polling, sightings, verification, REST routes, React admin pages.
 - 20+ public components: source feed family + citations + PMTiles graph map with hover overlays.
-- Logo wired now; font hook ready but inert until R2 URL configured.
+- Logo wired now; Vexorium Bold + Montserrat embedded locally with preloads (no R2 font fetch).
 
 **Non-Goals:**
 - No Rundown/Velocity/Vision/Audo/Trends/Vibe/Graph/Inbox plugins in this change.
 - No automated story writing, sentiment scoring, or social scraping.
-- No R2 provisioning or credential handling by the agent; user supplies MediaCloud key, R2 PMTiles URL, font URL.
+- No R2 provisioning or credential handling by the agent; user supplies MediaCloud key and R2 PMTiles URL.
 - No in-place PMTiles mutation; overlays are read-only adapters with graceful degradation.
 
 ## Decisions
@@ -25,7 +25,7 @@ See proposal.md for motivation. Current state: Astro + EmDash Node starter on `s
 - **MapLibre GL + `pmtiles` JS client reading a single `.pmtiles` from R2 (local `/public` fallback).** Rationale: Protomaps-recommended stack, range-request efficient, no tile server to run. Alternative Leaflet — rejected: weaker vector styling for the brutalist treatment.
 - **Graph overlay as GeoJSON source layers (nodes/edges) derived from co-linkage.** Rationale: no new tile pipeline; edges recompute from plugin API at request time. Hover via MapLibre popup; weather/census as small server adapters returning JSON, omitted on failure.
 - **Brutalist map style: paper background, black 3px linework, monospace labels, single accent for first-published/verified.** Rationale: matches house style; legibility via minimum label sizes and node spacing.
-- **Logo as `src/assets/thatsthe-news-logo.svg` inlined in masthead.** Rationale: crisp at all sizes, no extra request, black/red palette already matches theme. Font: `@font-face` block gated on configured URL; system stack otherwise.
+- **Logo as `src/assets/thatsthe-news-logo.svg` inlined in masthead.** Rationale: crisp at all sizes, no extra request, black/red palette already matches theme. Fonts: `@font-face` blocks served from `src/assets/fonts/` with `font-display: swap` and preloads.
 
 ## Risks / Trade-offs
 
