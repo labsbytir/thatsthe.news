@@ -4,6 +4,9 @@ import { EmDashHead, EmDashBodyStart, EmDashBodyEnd } from "emdash/ui";
 import { createPublicPageContext } from "emdash/page";
 import { resolveStarterSiteIdentity } from "../utils/site-identity";
 import "../styles/theme.css";
+import logoUrl from "../assets/thatsthe-news-logo.svg";
+
+const fontUrl = import.meta.env.PUBLIC_R2_FONT_URL as string | undefined;
 
 interface Props {
 	title: string;
@@ -62,6 +65,11 @@ const pageCtx = createPublicPageContext({
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>{fullTitle}</title>
+		{
+			fontUrl && (
+				<style>{`@font-face{font-family:"Newsroom R2";src:url("${fontUrl}") format("woff2");font-display:swap;}:root{--font-display:"Newsroom R2","Arial Narrow","Helvetica Neue",Impact,sans-serif;}`}</style>
+			)
+		}
 		<EmDashHead page={pageCtx} />
 	</head>
 	<body>
@@ -73,7 +81,16 @@ const pageCtx = createPublicPageContext({
 					Independent newsroom<br />Est. 2026 / No. 001
 				</div>
 				<div>
-					<h1 class="masthead__title">{siteTitle}</h1>
+					<h1 class="masthead__title">
+						<a href="/" aria-label={siteTitle}>
+							<img
+								src={logoUrl.src ?? logoUrl}
+								alt={siteTitle}
+								class="masthead__logo"
+								onerror="this.outerHTML=this.alt"
+							/>
+						</a>
+					</h1>
 					<p class="masthead__tagline">{siteTagline}</p>
 				</div>
 				<div class="masthead__side masthead__side--right mono">

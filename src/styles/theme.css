@@ -93,6 +93,13 @@ img {
 	overflow-wrap: anywhere;
 }
 
+.masthead__logo {
+	display: block;
+	width: min(560px, 72vw);
+	height: auto;
+	margin: 0 auto;
+}
+
 .masthead__tagline {
 	margin: 0;
 	text-align: center;
