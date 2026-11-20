@@ -2,12 +2,12 @@
 
 ## 1. Plugin core (native)
 
-- [ ] 1.1 Scaffold `plugins/gather/` (package, manifest, `definePlugin()` descriptor with cron + content/API capabilities) and verify `npx astro check` resolves the descriptor import
-- [ ] 1.2 Implement storage collections (sources, sightings, article-links with verification state) and verify a round-trip put/query/delete test passes
-- [ ] 1.3 Implement MediaCloud directory sync (collections → sources → feeds, idempotent upsert keyed by canonical URL) and verify a second sync creates zero duplicates
-- [ ] 1.4 Implement feed poller (RSS/sitemap fetch via allowlisted `ctx.http`, first-seen sightings) and verify a fixture feed with one new URL yields exactly one sighting
-- [ ] 1.5 Implement story matcher (candidate sightings → article links) plus verification state machine (unverified/corrob/verified/disputed) and verify state transitions persist per link
-- [ ] 1.6 Document plugin env (`MEDIACLOUD_API_KEY`, R2 PMTiles URL, overlay URLs) in `plugins/gather/README.md` and verify each variable is read in exactly one place
+- [x] 1.1 Scaffold `plugins/gather/` (package, manifest, `definePlugin()` descriptor with cron + content/API capabilities) and verify `npx astro check` resolves the descriptor import
+- [x] 1.2 Implement storage collections (sources, sightings, article-links with verification state) and verify a round-trip put/query/delete test passes
+- [x] 1.3 Implement MediaCloud directory sync (collections → sources → feeds, idempotent upsert keyed by canonical URL) and verify a second sync creates zero duplicates
+- [x] 1.4 Implement feed poller (RSS/sitemap fetch via allowlisted `ctx.http`, first-seen sightings) and verify a fixture feed with one new URL yields exactly one sighting
+- [x] 1.5 Implement story matcher (candidate sightings → article links) plus verification state machine (unverified/corrob/verified/disputed) and verify state transitions persist per link
+- [x] 1.6 Document plugin env (`MEDIACLOUD_API_KEY`, R2 PMTiles URL, overlay URLs) in `plugins/gather/README.md` and verify each variable is read in exactly one place
 
 ## 2. Plugin API and admin UI
 

@@ -1,0 +1,27 @@
+{
+	"name": "@thatsthe-news/plugin-gather",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "Gather: continuous source monitoring with per-article shared source feeds (native EmDash plugin)",
+	"main": "./dist/index.js",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"files": ["dist"],
+	"scripts": {
+		"build": "tsc -p tsconfig.json",
+		"typecheck": "tsc --noEmit -p tsconfig.json",
+		"test": "node --test src/urls.test.ts src/rss.test.ts src/store.test.ts"
+	},
+	"peerDependencies": {
+		"emdash": "*"
+	},
+	"devDependencies": {
+		"emdash": "*",
+		"typescript": "^6.0.0"
+	}
+}

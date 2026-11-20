@@ -3,6 +3,7 @@ import react from "@astrojs/react";
 import { defineConfig } from "astro/config";
 import emdash, { local } from "emdash/astro";
 import { sqlite } from "emdash/db";
+import { gatherPlugin } from "@thatsthe-news/plugin-gather";
 
 export default defineConfig({
 	output: "server",
@@ -21,6 +22,11 @@ export default defineConfig({
 				directory: "./uploads",
 				baseUrl: "/_emdash/api/media/file",
 			}),
+			plugins: [
+				gatherPlugin({
+					collections: ["United States - National", "United Kingdom - National"],
+				}),
+			],
 		}),
 	],
 	devToolbar: { enabled: false },
