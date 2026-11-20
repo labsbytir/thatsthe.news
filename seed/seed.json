@@ -1,45 +1,78 @@
 {
 	"$schema": "https://emdashcms.com/seed.schema.json",
 	"version": "1",
+	"defaultLocale": "en",
 	"meta": {
-		"name": "Starter",
-		"description": "A minimal EmDash starter with posts and pages",
-		"author": "EmDash"
+		"name": "That's The News",
+		"description": "Newsroom content model for thatsthe.news",
+		"author": "labsbytir"
 	},
 	"settings": {
-		"title": "My Site",
-		"tagline": "Built with EmDash"
+		"title": "THAT'S THE NEWS",
+		"tagline": "automated news. around the clock. updated in realtime where you are.",
+		"postsPerPage": 10,
+		"dateFormat": "MMM d, yyyy",
+		"timezone": "UTC"
 	},
 	"collections": [
 		{
-			"slug": "posts",
-			"label": "Posts",
-			"labelSingular": "Post",
-			"urlPattern": "/posts/{slug}",
+			"slug": "articles",
+			"label": "Articles",
+			"labelSingular": "Article",
+			"description": "Published newsroom stories",
+			"icon": "newspaper",
+			"urlPattern": "/articles/{slug}",
 			"supports": ["drafts", "revisions", "preview", "search", "seo"],
+			"titleField": "headline",
+			"dateField": "publishedAt",
+			"sortOrder": 10,
+			"admin": {
+				"listColumns": ["region", "breaking"]
+			},
 			"fields": [
 				{
-					"slug": "title",
-					"label": "Title",
+					"slug": "headline",
+					"label": "Headline",
 					"type": "string",
+					"required": true,
+					"searchable": true,
+					"validation": { "maxLength": 180 }
+				},
+				{
+					"slug": "dek",
+					"label": "Dek",
+					"type": "text",
+					"searchable": true,
+					"options": { "rows": 3 }
+				},
+				{
+					"slug": "content",
+					"label": "Body",
+					"type": "portableText",
 					"required": true,
 					"searchable": true
 				},
 				{
-					"slug": "featured_image",
-					"label": "Featured Image",
+					"slug": "hero_image",
+					"label": "Hero Image",
 					"type": "image"
 				},
 				{
-					"slug": "content",
-					"label": "Content",
-					"type": "portableText",
-					"searchable": true
+					"slug": "breaking",
+					"label": "Breaking",
+					"type": "boolean",
+					"defaultValue": false,
+					"indexed": true
 				},
 				{
-					"slug": "excerpt",
-					"label": "Excerpt",
-					"type": "text"
+					"slug": "region",
+					"label": "Edition",
+					"type": "select",
+					"defaultValue": "Global",
+					"indexed": true,
+					"validation": {
+						"options": ["Global", "UK", "US", "EU", "APAC"]
+					}
 				}
 			]
 		},
@@ -48,7 +81,8 @@
 			"label": "Pages",
 			"labelSingular": "Page",
 			"urlPattern": "/{slug}",
-			"supports": ["drafts", "revisions", "preview", "search", "seo"],
+			"supports": ["drafts", "revisions", "preview", "search"],
+			"sortOrder": 20,
 			"fields": [
 				{
 					"slug": "title",
@@ -69,19 +103,15 @@
 	"taxonomies": [
 		{
 			"name": "category",
-			"label": "Categories",
-			"labelSingular": "Category",
-			"hierarchical": true,
-			"collections": ["posts"],
+			"label": "Sections",
+			"labelSingular": "Section",
+			"hierarchical": false,
+			"collections": ["articles"],
 			"terms": [
-				{
-					"slug": "general",
-					"label": "General"
-				},
-				{
-					"slug": "updates",
-					"label": "Updates"
-				}
+				{ "slug": "world", "label": "World" },
+				{ "slug": "business", "label": "Business" },
+				{ "slug": "technology", "label": "Technology" },
+				{ "slug": "culture", "label": "Culture" }
 			]
 		},
 		{
@@ -89,66 +119,40 @@
 			"label": "Tags",
 			"labelSingular": "Tag",
 			"hierarchical": false,
-			"collections": ["posts"],
+			"collections": ["articles"],
 			"terms": [
-				{
-					"slug": "starter",
-					"label": "Starter"
-				},
-				{
-					"slug": "example",
-					"label": "Example"
-				}
+				{ "slug": "live", "label": "Live" },
+				{ "slug": "analysis", "label": "Analysis" },
+				{ "slug": "explainer", "label": "Explainer" }
 			]
+		}
+	],
+	"bylines": [
+		{
+			"id": "byline-desk",
+			"slug": "newsroom-desk",
+			"displayName": "The Newsroom Desk",
+			"isGuest": false
+		},
+		{
+			"id": "byline-reyes",
+			"slug": "ana-reyes",
+			"displayName": "Ana Reyes",
+			"bio": "Senior correspondent",
+			"isGuest": false
 		}
 	],
 	"menus": [
 		{
 			"name": "primary",
-			"label": "Primary Navigation",
+			"label": "Primary navigation",
 			"items": [
-				{
-					"type": "custom",
-					"label": "Home",
-					"url": "/"
-				},
-				{
-					"type": "custom",
-					"label": "Posts",
-					"url": "/posts"
-				},
-				{
-					"type": "custom",
-					"label": "About",
-					"url": "/about"
-				}
-			]
-		}
-	],
-	"widgetAreas": [
-		{
-			"name": "sidebar",
-			"label": "Sidebar",
-			"description": "Sidebar widget area",
-			"widgets": [
-				{
-					"type": "component",
-					"componentId": "core:search",
-					"title": "Search"
-				},
-				{
-					"type": "component",
-					"componentId": "core:categories",
-					"title": "Categories"
-				},
-				{
-					"type": "component",
-					"componentId": "core:recent-posts",
-					"title": "Recent Posts",
-					"props": {
-						"count": 5
-					}
-				}
+				{ "type": "custom", "label": "Home", "url": "/" },
+				{ "type": "custom", "label": "World", "url": "/category/world" },
+				{ "type": "custom", "label": "Business", "url": "/category/business" },
+				{ "type": "custom", "label": "Technology", "url": "/category/technology" },
+				{ "type": "custom", "label": "Culture", "url": "/category/culture" },
+				{ "type": "custom", "label": "About", "url": "/about" }
 			]
 		}
 	],
@@ -164,70 +168,229 @@
 						{
 							"_type": "block",
 							"style": "normal",
+							"_key": "about-b1",
 							"children": [
 								{
 									"_type": "span",
-									"text": "This is the about page. Edit it in the admin panel or replace this template with your own design.",
-									"_key": "k1"
+									"_key": "about-s1",
+									"text": "That's The News is an independent newsroom built for readers who want the signal without the ceremony. This demo site is editable in EmDash: every story, section, edition, byline and headline you see can be changed from the admin panel."
 								}
-							],
-							"_key": "k0"
+							]
 						}
 					]
 				}
 			}
 		],
-		"posts": [
+		"articles": [
 			{
-				"id": "post-1",
-				"slug": "welcome",
+				"id": "art-markets",
+				"slug": "markets-rally-on-rate-pause-signals",
 				"status": "published",
 				"data": {
-					"title": "Welcome",
-					"excerpt": "Your first post. Replace this with your own content.",
+					"headline": "Markets rally as central bank signals a pause",
+					"dek": "Equities climbed across three continents after the latest policy note hinted that the tightening cycle may be over.",
+					"breaking": true,
+					"region": "Global",
 					"content": [
 						{
 							"_type": "block",
 							"style": "normal",
+							"_key": "mk-b1",
 							"children": [
 								{
 									"_type": "span",
-									"text": "This is a starter post. The templates in this project show the basic patterns for querying and rendering EmDash content. Replace them with your own design.",
-									"_key": "k1"
+									"_key": "mk-s1",
+									"text": "Global equities rose sharply on Thursday after a central bank statement suggested interest rates could hold steady through the next quarter. The move was broad, with technology and industrial shares leading gains in London, New York and Tokyo."
 								}
-							],
-							"_key": "k0"
+							]
 						},
 						{
 							"_type": "block",
 							"style": "h2",
+							"_key": "mk-b2",
 							"children": [
 								{
 									"_type": "span",
-									"text": "What to do next",
-									"_key": "k3"
+									"_key": "mk-s2",
+									"text": "What changed"
 								}
-							],
-							"_key": "k2"
+							]
 						},
 						{
 							"_type": "block",
 							"style": "normal",
+							"_key": "mk-b3",
 							"children": [
 								{
 									"_type": "span",
-									"text": "Open the admin panel to add content, or edit the Astro pages in src/pages to change how content is displayed.",
-									"_key": "k5"
+									"_key": "mk-s3",
+									"text": "Analysts said the language shift mattered more than any single number. Markets now turn to next week's inflation figures for a confirmation of the new tone."
 								}
-							],
-							"_key": "k4"
+							]
 						}
 					]
 				},
-				"taxonomies": {
-					"category": ["general"],
-					"tag": ["starter", "example"]
-				}
+				"taxonomies": { "category": ["business"], "tag": ["live"] },
+				"bylines": [{ "byline": "byline-desk", "roleLabel": "Wire desk" }]
+			},
+			{
+				"id": "art-night-transport",
+				"slug": "cities-rewrite-the-rules-of-night-transport",
+				"status": "published",
+				"data": {
+					"headline": "Cities rewrite the rules of night transport",
+					"dek": "From overnight rail to late buses, a new wave of municipal planning is treating the 1am journey as a first-class problem.",
+					"breaking": false,
+					"region": "UK",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "nt-b1",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "nt-s1",
+									"text": "A dozen city councils are redrawing their transport maps around a simple observation: the way people move after midnight is not the same as the way they move at rush hour."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "nt-b2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "nt-s2",
+									"text": "Early pilots suggest that frequent, simpler late-night routes bring more riders than bigger vehicles running less often."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": { "category": ["world"], "tag": ["analysis"] },
+				"bylines": [{ "byline": "byline-reyes", "roleLabel": "Correspondent" }]
+			},
+			{
+				"id": "art-local-desk",
+				"slug": "the-quiet-return-of-the-local-newsroom",
+				"status": "published",
+				"data": {
+					"headline": "The quiet return of the local newsroom",
+					"dek": "Small teams are finding that a tight geographic focus can beat a national feed on both trust and attention.",
+					"breaking": false,
+					"region": "US",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "ld-b1",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "ld-s1",
+									"text": "A generation after local papers contracted, a different kind of newsroom is appearing: five or six reporters, a narrow patch of map, and a publishing cadence built around the reader's day rather than the print deadline."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": { "category": ["culture"], "tag": ["explainer"] },
+				"bylines": [{ "byline": "byline-desk", "roleLabel": "Desk" }]
+			},
+			{
+				"id": "art-small-models",
+				"slug": "inside-the-new-wave-of-small-model-ai",
+				"status": "published",
+				"data": {
+					"headline": "Inside the new wave of small-model AI",
+					"dek": "The industry's attention is shifting from ever-larger systems to models that fit on a laptop and answer to a narrower brief.",
+					"breaking": false,
+					"region": "Global",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "sm-b1",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "sm-s1",
+									"text": "Smaller models are not trying to win the headline benchmark. They are designed to run close to the user, cost little, and do one job reliably."
+								}
+							]
+						},
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "sm-b2",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "sm-s2",
+									"text": "That trade is reshaping where AI work happens: less in distant data centres, more in ordinary devices."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": { "category": ["technology"], "tag": ["analysis"] },
+				"bylines": [{ "byline": "byline-reyes", "roleLabel": "Correspondent" }]
+			},
+			{
+				"id": "art-winter-grids",
+				"slug": "what-a-warmer-winter-means-for-northern-grids",
+				"status": "published",
+				"data": {
+					"headline": "What a warmer winter means for northern grids",
+					"dek": "Milder seasons change the shape of demand, and the operators planning the next decade are taking notice.",
+					"breaking": false,
+					"region": "EU",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "wg-b1",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "wg-s1",
+									"text": "Grid planners have traditionally sized for the coldest week of the year. A warmer winter does not remove that risk, but it changes how often the system runs near its limit."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": { "category": ["world"], "tag": ["explainer"] },
+				"bylines": [{ "byline": "byline-desk", "roleLabel": "Desk" }]
+			},
+			{
+				"id": "art-apac-freight",
+				"slug": "freight-lanes-are-being-redrawn-across-apac",
+				"status": "published",
+				"data": {
+					"headline": "Freight lanes are being redrawn across APAC",
+					"dek": "New routes and smaller ports are changing how the region moves goods, with consequences for consumers.",
+					"breaking": false,
+					"region": "APAC",
+					"content": [
+						{
+							"_type": "block",
+							"style": "normal",
+							"_key": "fr-b1",
+							"children": [
+								{
+									"_type": "span",
+									"_key": "fr-s1",
+									"text": "Shipping networks are adapting to congestion and shifting trade patterns by spreading cargo across more ports and more frequent, smaller sailings."
+								}
+							]
+						}
+					]
+				},
+				"taxonomies": { "category": ["business"], "tag": ["analysis"] },
+				"bylines": [{ "byline": "byline-reyes", "roleLabel": "Correspondent" }]
 			}
 		]
 	}
